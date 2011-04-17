@@ -1,9 +1,8 @@
 require 'mkmf'
 $LDFLAGS = "-licuuc -licui18n -licudata -lstdc++ "
 $CFLAGS = "-Wall"
-if !have_library('icui18n', 'u_init_3_8')
-  puts "ICU v3.4 required -- not found."
-  exit 1
+if !have_library('icui18n', 'u_init_4_2')
+  STDERR.puts "Tested against ICU v4.2, which is not the version you have."
 end
 create_makefile('icu4r')
 File.open("Makefile", "a") << <<-EOT
