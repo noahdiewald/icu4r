@@ -1,4 +1,4 @@
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. ext])
 
-require 'icu4r/c/decode'
+require 'icu4r/c/icu4r'
 
