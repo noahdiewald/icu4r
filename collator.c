@@ -83,12 +83,30 @@ VALUE icu4r_col_init(int argc, VALUE * argv, VALUE self)
     UErrorCode status = U_ZERO_ERROR;
     VALUE  loc;
     char * locale = NULL;
-	  if( rb_scan_args(argc, argv, "01", &loc)) 
+    if( rb_scan_args(argc, argv, "01", &loc)) 
     {
-	     Check_Type(loc, T_STRING);
+       Check_Type(loc, T_STRING);
        locale = RSTRING(loc)->ptr;
     }
     col = ucol_open(locale,  &status);
+    ICU_RAISE(status);
+    DATA_PTR(self)=col;
+    return self;
+}
+
+/**
+ * call-seq:
+ *       col = UCollator.tailor!(rules)
+ *       
+ * Set tailoring rules provided by UString. Warning, this will reset any previously set attributes.
+ */
+VALUE icu4r_tailor_init(VALUE self, VALUE rules)
+{
+    UCollator * col;
+    UErrorCode status = U_ZERO_ERROR;
+    Check_Class(rules, rb_cUString);
+    ucol_close(UCOLLATOR(self));
+    col = ucol_openRules(ICU_PTR(rules), ICU_LEN(rules), UCOL_ON, UCOL_DEFAULT_STRENGTH, NULL, &status);
     ICU_RAISE(status);
     DATA_PTR(self)=col;
     return self;
@@ -192,6 +210,7 @@ void initialize_collator()
   rb_define_alloc_func(rb_cUCollator, icu4r_col_alloc);
 
   rb_define_method(rb_cUCollator, "initialize", icu4r_col_init, -1);
+  rb_define_method(rb_cUCollator, "tailor!", icu4r_tailor_init, 1);
   rb_define_method(rb_cUCollator, "strength",  icu4r_col_get_strength, 0);
   rb_define_method(rb_cUCollator, "strength=", icu4r_col_set_strength, 1);
   rb_define_method(rb_cUCollator, "get_attr",  icu4r_col_get_attr, 1);

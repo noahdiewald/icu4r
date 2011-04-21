@@ -1,7 +1,19 @@
 require './icu4r'
 require 'test/unit'
-# these tests are ICU 3.4 dependent
+
 class UCollatorTest < Test::Unit::TestCase
+  def test_tailor_simple
+    c = UCollator.new("root")
+    c.tailor!("&e < a".u)
+    assert_equal(-1,  c.strcoll("e".u, "a".u))
+  end
+  
+  def test_tailor_complex
+    c = UCollator.new("root")
+    c.tailor!("&9 < a, A < \304\201, a\314\204, \304\200, A\314\204 < c, C < ae, AE < a\315\236e, A\315\236E < e, E < \304\223, e\314\204, \304\222, E\314\204 < h, H < i, I < \304\253, i\314\204, \304\252, I\314\204 < k, K < m, M < n, N < o, O < \305\215, o\314\204, \305\214, O\314\204 < p, P < q, Q < r, R < s, S < t, T < u, U < \305\253, u\314\204, \305\252, U\314\204 < w, W < y, Y".u)
+    assert_equal(-1,  c.strcoll("ak".u, "ae".u))
+  end
+  
   def test_strength
     c = UCollator.new("root")
     assert_equal(0,  c.strcoll("a".u, "a".u))
