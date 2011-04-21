@@ -6,3 +6,4 @@ pkg/*
 *.so
 mkmf.log
 doc/*
+ext/icu4r/c/Makefile
