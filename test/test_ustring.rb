@@ -288,7 +288,7 @@ class UnicodeStringTest < Test::Unit::TestCase
 
     def test_strcoll
     assert_equal(0,  UString::strcoll("a".u, "a".u))
-    assert_equal(-1, UString::strcoll("y".u, "k".u, "lv"))
+    assert_equal(-1, UString::strcoll("a".u, "k".u, "lv"))
     assert_equal(1,  UString::strcoll("я".u, "а".u))
     assert_equal(1,  UString::strcoll("я".u, "А".u, "ru"))
     assert_equal(0,  UString::strcoll("İSTANBUL".u, "istanbul".u, "tr", 0))
