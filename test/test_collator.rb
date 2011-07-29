@@ -1,4 +1,5 @@
-require 'ext/icu4r/c/icu4r'
+# coding: utf-8
+require './lib/icu4r'
 require 'test/unit'
 
 class UCollatorTest < Test::Unit::TestCase
