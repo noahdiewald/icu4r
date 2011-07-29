@@ -1639,6 +1639,14 @@ icu_ustr_chars_m(argc, argv, str)
  *              // The delimiter was at the end of the string.  We're done.
  *              break;
  *          }
+ *
+ *  NOTE: The above has changed in newer versions of icu. It now works like
+ *  Ruby's split.
+ *  In icu/source/i18n/uregex.cpp uregex_split():
+ *          if (nextOutputStringStart == inputLen) {
+ *              // The delimiter was at the end of the string. 
+ *              // Output an empty string, and then we are done.
+ *              ...
  */
 
 VALUE

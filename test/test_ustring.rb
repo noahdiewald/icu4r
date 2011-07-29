@@ -278,9 +278,9 @@ class UnicodeStringTest < Test::Unit::TestCase
       assert_equal([S("a|b|c")], S("a|b|c").split(S('\|'), 1))
       assert_equal([S("a"), S("b|c")], S("a|b|c").split(S('\|'), 2))
       assert_equal([S("a"), S("b"), S("c")], S("a|b|c").split(S('\|'), 3))
-      assert_equal([S("a"), S("b"), S("c")], S("a|b|c|").split(S('\|'), -1))
-      assert_equal([S("a"), S("b"), S("c"), S("") ], S("a|b|c||").split(S('\|'), -1))
-      assert_equal([S("a"), S(""), S("b"), S("c")], S("a||b|c|").split(S('\|'), -1))
+      assert_equal([S("a"), S("b"), S("c"), S("")], S("a|b|c|").split(S('\|'), -1))
+      assert_equal([S("a"), S("b"), S("c"), S(""), S("")], S("a|b|c||").split(S('\|'), -1))
+      assert_equal([S("a"), S(""), S("b"), S("c"), S("")], S("a||b|c|").split(S('\|'), -1))
     end
 
 
