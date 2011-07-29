@@ -221,7 +221,9 @@ class UnicodeStringTest < Test::Unit::TestCase
       assert_equal(b.search("zaeti".u, :locale => "en", :ignore_case => true) , [])
       assert_equal(b.search("zaeti".u, :locale => "en", :ignore_case_accents => true) , [14..17])
       assert_equal("İSTANBUL".u.search("istanbul".u, :locale => 'tr', :ignore_case => true), [0..7])
-      assert_equal("ёжий".u.norm_D.search("ЕЖИЙ".u, :locale => 'ru', :canonical => true, :ignore_case_accents => true), [0..4])
+      assert_equal("ёжий".u.norm_D.search("ЕЖИЙ".u, :locale => 'ru', :canonical => true, :ignore_case_accents => true), [0..5])
+      assert_equal("papá".u.norm_D.search("papa".u, :locale => 'es', :canonical => true, :ignore_case_accents => true), [0..4])
+      assert_equal("papá".u.norm_D.search("papa".u, :locale => 'es', :canonical => true, :ignore_case_accents => false), [])
   end
 
   def test_dollar_sign_regexp
