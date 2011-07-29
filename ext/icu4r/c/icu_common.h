@@ -32,6 +32,26 @@ typedef struct {
 #define ICU_CAPA(str) USTRING(str)->capa
 #define ICU_RESIZE(str,capacity)  REALLOC_N(ICU_PTR(str), UChar, (capacity)+1);
 
+/* Ruby 1.8 compatability */
+
+#ifndef RUBY_19
+#ifndef RFLOAT_VALUE
+#define RFLOAT_VALUE(v) (RFLOAT(v)->value)
+#endif
+#ifndef RARRAY_LEN
+#define RARRAY_LEN(v) (RARRAY(v)->len)
+#endif
+#ifndef RARRAY_PTR
+#define RARRAY_PTR(v) (RARRAY(v)->ptr)
+#endif
+#ifndef RSTRING_PTR
+#define RSTRING_PTR(v) (RSTRING(v)->ptr)
+#endif
+#ifndef RSTRING_LEN
+#define RSTRING_LEN(v) (RSTRING(v)->len)
+#endif
+#endif
+
 typedef struct  {
     URegularExpression *pattern;
     int options;

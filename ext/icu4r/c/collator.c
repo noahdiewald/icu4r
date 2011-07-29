@@ -86,7 +86,7 @@ VALUE icu4r_col_init(int argc, VALUE * argv, VALUE self)
     if( rb_scan_args(argc, argv, "01", &loc)) 
     {
        Check_Type(loc, T_STRING);
-       locale = RSTRING(loc)->ptr;
+       locale = RSTRING_PTR(loc);
     }
     col = ucol_open(locale,  &status);
     ICU_RAISE(status);
