@@ -311,10 +311,12 @@ class UnicodeStringTest < Test::Unit::TestCase
     end
 
     def test_resbundle
+      # WARNING: The files these depend on can change. http://source.icu-project.org/repos/icu/icu/trunk/source/data/locales/en.txt
     	b = UResourceBundle.open(nil, "en")
-	assert_equal("Russia".u, b["Countries"]["RU"])
+	assert_equal("Sunday".u, b["calendar"]["gregorian"]["dayNames"]["format"]["wide"][0])
+      # WARNING: The files these depend on can change. http://source.icu-project.org/repos/icu/icu/trunk/source/data/locales/ru.txt
 	b = UResourceBundle.open(nil, "ru")
-	assert_equal("Россия".u, b["Countries"]["RU"])
+	assert_equal("воскресенье".u, b["calendar"]["gregorian"]["dayNames"]["format"]["wide"][0])
 
     end
 
