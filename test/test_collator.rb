@@ -4,8 +4,7 @@ require 'test/unit'
 
 class UCollatorTest < Test::Unit::TestCase
   def test_tailor_simple
-    c = UCollator.new("root")
-    c.tailor!("&e < a".u)
+    c = UCollator.new("&e < a".u)
     assert_equal(-1,  c.strcoll("e".u, "a".u))
   end
   

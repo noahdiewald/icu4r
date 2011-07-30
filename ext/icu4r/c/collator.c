@@ -268,7 +268,6 @@ void initialize_collator()
   rb_define_alloc_func(rb_cUCollator, icu4r_col_alloc);
 
   rb_define_method(rb_cUCollator, "initialize", icu4r_col_init, -1);
-  rb_define_method(rb_cUCollator, "tailor!", icu4r_tailor_init, 1);
   rb_define_method(rb_cUCollator, "strength",  icu4r_col_get_strength, 0);
   rb_define_method(rb_cUCollator, "strength=", icu4r_col_set_strength, 1);
   rb_define_method(rb_cUCollator, "get_attr",  icu4r_col_get_attr, 1);
