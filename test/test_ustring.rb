@@ -232,10 +232,10 @@ class UnicodeStringTest < Test::Unit::TestCase
   end
   
   def test_codepoints
-      a=[0x01234, 0x0434, 0x1D7D9, ?t, ?e, ?s]
-      b=a.pack("U*").u
-      assert_equal(a, b.codepoints)
-      assert_equal(b, a.to_u)
+    a = [0x01234, 0x0434, 0x1D7D9, 116, 101, 115]
+    b = a.pack("U*").u
+    assert_equal(a, b.codepoints)
+    assert_equal(b, a.to_u)
   end
 
     def test_chars
@@ -395,13 +395,20 @@ class UnicodeStringTest < Test::Unit::TestCase
 	assert_equal(" 123456789Aa ".u , a); 	a = a.clone
 
     end
-    def test_1_to_u_to_s
-	assert_equal(
-		"\355\350\367\345\343\356 \355\345 \360\340\341\356\362\340\345\362 :( ?".to_u("cp-1251").to_s("utf-8"),
-		"\320\275\320\270\321\207\320\265\320\263\320\276 \320\275\320\265 \321\200\320\260\320\261\320\276\321\202\320\260\320\265\321\202 :( ?")
-   end
+    
+  def test_1_to_u_to_s
+    if RUBY_VERSION.to_f < 1.9
+      assert_equal(
+        "\355\350\367\345\343\356 \355\345 \360\340\341\356\362\340\345\362 :( ?".to_u("cp-1251").to_s("utf-8"),
+        "\320\275\320\270\321\207\320\265\320\263\320\276 \320\275\320\265 \321\200\320\260\320\261\320\276\321\202\320\260\320\265\321\202 :( ?")
+    else
+      assert_equal(
+        "\355\350\367\345\343\356 \355\345 \360\340\341\356\362\340\345\362 :( ?".to_u("cp-1251").to_s("utf-8").force_encoding("UTF-8"),
+        "\320\275\320\270\321\207\320\265\320\263\320\276 \320\275\320\265 \321\200\320\260\320\261\320\276\321\202\320\260\320\265\321\202 :( ?")
+    end
+  end
 
-   def test_nested_blocks
+  def test_nested_blocks
    	a = "Модифицируемые строки иногда напрягают :)".u
 	b = "".u
    	assert_nothing_raised {
@@ -416,7 +423,7 @@ class UnicodeStringTest < Test::Unit::TestCase
 		}
 	}
 	assert_equal("Модиооофиоооциоооруемые строкиооо иоооногда напрягают :)".u, b)
-   end
+  end
    
   def test_AREF # '[]'
     assert_equal(S("A"),  S("AooBar")[0])

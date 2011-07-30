@@ -32,33 +32,63 @@ class UConverterTest < Test::Unit::TestCase
   end
 
   def test_e_convert_class_method
-    a_s = "\357\360\356\342\345\360\352\340 abcd" 
-    u_s = UConverter.convert("utf8", "cp1251", a_s)
-    assert_equal("проверка abcd", u_s)
-    r_s = UConverter.convert("cp1251", "utf8", u_s)
-    assert_equal(r_s, a_s)
+    if RUBY_VERSION.to_f < 1.9
+      a_s = "\357\360\356\342\345\360\352\340 abcd"
+      u_s = UConverter.convert("utf8", "cp1251", a_s)
+      assert_equal("проверка abcd", u_s)
+      r_s = UConverter.convert("cp1251", "utf8", u_s)
+      assert_equal(r_s, a_s)
+    else
+      a_s = "\357\360\356\342\345\360\352\340 abcd".force_encoding("cp1251")
+      u_s = UConverter.convert("utf8", "cp1251", a_s).force_encoding("UTF-8")
+      assert_equal("проверка abcd".force_encoding("UTF-8"), u_s)
+      r_s = UConverter.convert("cp1251", "utf8", u_s).force_encoding("cp1251")
+      assert_equal(r_s, a_s)
+    end
   end
 
   def test_f_to_from_u
-    c = UConverter.new("cp1251")
-    a_s = "\357\360\356\342\345\360\352\340 abcd" 
-    u_s = c.to_u(a_s)
-    assert_kind_of(UString, u_s)
-    r_s = c.from_u(u_s)
-    assert_equal(r_s, a_s)
+    if RUBY_VERSION.to_f < 1.9
+      c = UConverter.new("cp1251")
+      a_s = "\357\360\356\342\345\360\352\340 abcd"
+      u_s = c.to_u(a_s)
+      assert_kind_of(UString, u_s)
+      r_s = c.from_u(u_s)
+      assert_equal(r_s, a_s)
+    else
+      c = UConverter.new("cp1251")
+      a_s = "\357\360\356\342\345\360\352\340 abcd".force_encoding("cp1251")
+      u_s = c.to_u(a_s)
+      assert_kind_of(UString, u_s)
+      r_s = c.from_u(u_s).force_encoding("cp1251")
+      assert_equal(r_s, a_s)
+    end
   end
 
   def test_g_convert_instance_method
-    c1 = UConverter.new("EUC-JP")
-    c2 = UConverter.new("Cp1251")
-    a_s = "\247\322\247\335\247\361!"
-    b_s = a_s * 1000
-    a1 = UConverter.convert("Cp1251", "EUC-JP", b_s)
-    a2 = c1.convert(c2,  b_s)
-    assert_equal(a1.size, a2.size)
-    assert_equal(a2.size, 4 * 1000)
-    assert_equal(a1, a2)
-    assert_equal("\341\353\377!", c1.convert(c2, a_s))
+    if RUBY_VERSION.to_f < 1.9
+      c1 = UConverter.new("EUC-JP")
+      c2 = UConverter.new("Cp1251")
+      a_s = "\247\322\247\335\247\361!"
+      b_s = a_s * 1000
+      a1 = UConverter.convert("Cp1251", "EUC-JP", b_s)
+      a2 = c1.convert(c2,  b_s)
+      assert_equal(a1.size, a2.size)
+      assert_equal(a2.size, 4 * 1000)
+      assert_equal(a1, a2)
+      assert_equal("\341\353\377!", c1.convert(c2, a_s))
+    else
+      c1 = UConverter.new("EUC-JP")
+      c2 = UConverter.new("Cp1251")
+      a_s = "\247\322\247\335\247\361!".force_encoding("EUC-JP")
+      b_s = a_s * 1000
+      a1 = UConverter.convert("Cp1251", "EUC-JP", b_s).force_encoding("cp1251")
+      a2 = c1.convert(c2,  b_s).force_encoding("cp1251")
+      assert_equal(a1.size, a2.size)
+      assert_equal(a2.size, 4 * 1000)
+      assert_equal(a1, a2)
+      assert_equal("\341\353\377!".force_encoding("cp1251"), c1.convert(c2, a_s).force_encoding("cp1251"))
+    end
   end
 
   def test_h_subst_chars
