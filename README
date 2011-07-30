@@ -2,6 +2,12 @@
 
 === A Note On This Fork
 
+WARNING: This code is not properly tested. It works for me but is likely 
+to have serious problems.
+
+NOTE: The UCalendar stuff looks broken and the tests are commented
+out. I don't use this stuff so I haven't looked at it yet.
+
 This is code is derived from alterations of the original by Chris Anderson
 (jchris).
 
@@ -12,23 +18,13 @@ Changes I've made:
 * Repackaged the gem
 * Did some minor tweaking to get it running under Ruby 1.9.2
 * Fixed most tests that were already written and added a few more
-* Hacked in tailoring rule support to UCollator
+* Add tailoring rule support to UCollator
 
 The biggest change is that it is now possible to specify tailoring rules
-after creating a collator. It is just a hack but it works. Below is an
-example using abreviated tailoring rules needed for a Native American
-language where no locale has been defined:
+when initializing a collator. Below is an example abreviated rule for a
+Native American language that does not have a locale defined.
   
-    c = UCollator.new("root")
-    c.tailor!("&9 < a, A < \304\201, a\314\204, \304\200, A\314\204 < c, C < ae, AE < a\315\236e, A\315\236E".u)
-    
-It is a bad way of doing things but this is my first crack at messing
-with Ruby C extentions. c.tailor! basically destroys the original
-UCollator and replaces it with another that uses the tailoring rules. I
-plan to make it better as soon.
-
-*NOTE*: The UCalendar stuff looks broken and the tests are commented
-out. I don't use this stuff so I haven't looked at it yet.
+    c = UCollator.new("&9 < a, A < \304\201, a\314\204, \304\200, A\314\204 < c, C < ae, AE < a\315\236e, A\315\236E".u)
 
 === Original README content
 
