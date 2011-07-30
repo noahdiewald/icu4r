@@ -2,6 +2,8 @@
 extern VALUE rb_cUString;
 extern VALUE rb_cUCollator;
 extern int icu_collator_cmp (UCollator * collator, VALUE str1, VALUE str2) ;
+extern UCollator * icu4r_locale_col_init(char * locale);
+extern UCollator * icu4r_tailoring_col_init(VALUE rules, VALUE opts);
 
 /**
  * Document-class: UCollator
@@ -69,47 +71,103 @@ static VALUE icu4r_col_alloc(VALUE klass)
 {
     return Data_Wrap_Struct(klass, 0, icu4r_col_free, 0);
 }
+
 /**
  * call-seq:
  *       col = UCollator.new(locale = nil)
+ *       col = UCollator.new(rules, options = nil)
  *       
- * Open a UCollator for comparing strings for the given locale containing the required collation rules. 
- * Special values for locales can be passed in - if +nil+ is passed for the locale, the default locale 
- * collation rules will be used. If empty string ("") or "root" are passed, UCA rules will be used.
+ * When a locale is used, open a UCollator for comparing strings for the
+ * given locale containing the required collation rules.  Special values
+ * for locales can be passed in - if +nil+ is passed for the locale, the
+ * default locale collation rules will be used. If empty string ("") or
+ * "root" are passed, UCA rules will be used.
+ * 
+ * If rules are specified, they must be in a UString. See the
+ * ICU User Guide form more information about custom collation
+ * http://userguide.icu-project.org/collation/customization
+ * 
+ * When rules are specified, some options may be included:
+ * 
+ *   :strength => :primary | :secondary | :tertiary | :identical
+ *   :normalization => true | false
+ *   
+ * These correspond to UCOL_PRIMARY, UCOL_SECONDARY, UCOL_TERTIARY,
+ * UCOL_IDENTICAL for strength and UCOL_OFF (expect the text to not need
+ * normalization), UCOL_ON (normalize) for normalization as described in
+ * the icu documentation.
+ * 
+ * Defaults are UCOL_DEFAULT_STRENGTH and UCOL_DEFAULT (set the mode
+ * according to the rules) if the options are not set.
+ * 
+ * Strenth can be set in the rules as well.
  */
 VALUE icu4r_col_init(int argc, VALUE * argv, VALUE self)
 {
     UCollator * col;
-    UErrorCode status = U_ZERO_ERROR;
-    VALUE  loc;
-    char * locale = NULL;
-    if( rb_scan_args(argc, argv, "01", &loc)) 
-    {
-       Check_Type(loc, T_STRING);
-       locale = RSTRING_PTR(loc);
+    VALUE ucol_def;
+    VALUE ucol_opts;
+    
+    rb_scan_args(argc, argv, "02", &ucol_def, &ucol_opts);
+    
+    if (TYPE(ucol_def) == T_NIL || TYPE(ucol_def) == T_STRING) {
+        col = icu4r_locale_col_init(RSTRING_PTR(ucol_def));
+    } else {
+        Check_Class(ucol_def, rb_cUString);
+        col = icu4r_tailoring_col_init(ucol_def, ucol_opts);
     }
-    col = ucol_open(locale,  &status);
-    ICU_RAISE(status);
-    DATA_PTR(self)=col;
+    
+    DATA_PTR(self) = col;
     return self;
 }
 
-/**
- * call-seq:
- *       col = UCollator.tailor!(rules)
- *       
- * Set tailoring rules provided by UString. Warning, this will reset any previously set attributes.
- */
-VALUE icu4r_tailor_init(VALUE self, VALUE rules)
+UCollator * icu4r_locale_col_init(char * locale)
 {
     UCollator * col;
     UErrorCode status = U_ZERO_ERROR;
-    Check_Class(rules, rb_cUString);
-    ucol_close(UCOLLATOR(self));
-    col = ucol_openRules(ICU_PTR(rules), ICU_LEN(rules), UCOL_ON, UCOL_DEFAULT_STRENGTH, NULL, &status);
+    col = ucol_open(locale,  &status);
     ICU_RAISE(status);
-    DATA_PTR(self)=col;
-    return self;
+    return col;
+}
+
+UCollator * icu4r_tailoring_col_init(VALUE rules, VALUE opts)
+{
+    UCollator * col;
+    UErrorCode status = U_ZERO_ERROR;
+    UColAttributeValue normalizationMode = UCOL_DEFAULT;
+    UCollationStrength strength = UCOL_DEFAULT_STRENGTH;
+    UParseError parseError;
+    VALUE strength_opt;
+    VALUE norm_sym = ID2SYM(rb_intern("normalization"));
+    VALUE strength_sym = ID2SYM(rb_intern("strength"));
+    VALUE primary_sym = ID2SYM(rb_intern("primary"));
+    VALUE secondary_sym = ID2SYM(rb_intern("secondary"));
+    VALUE tertiary_sym = ID2SYM(rb_intern("tertiary"));
+    VALUE identical_sym = ID2SYM(rb_intern("identical"));
+    
+    if (TYPE(opts) == T_HASH) {
+        if (rb_hash_aref(opts, norm_sym) == Qtrue) {
+            normalizationMode = UCOL_ON;
+        } else if (rb_hash_aref(opts, norm_sym) == Qfalse) {
+            normalizationMode = UCOL_OFF;
+        }
+        
+        strength_opt = rb_hash_aref(opts, strength_sym);
+        
+        if (strength_opt == primary_sym) {
+            strength = UCOL_PRIMARY;
+        } else if (strength_opt == secondary_sym) {
+            strength = UCOL_SECONDARY;
+        } else if (strength_opt == tertiary_sym) {
+            strength = UCOL_TERTIARY;
+        } else if (strength_opt == identical_sym) {
+            strength = UCOL_IDENTICAL;
+        }
+    }
+    
+    col = ucol_openRules(ICU_PTR(rules), ICU_LEN(rules), normalizationMode, strength, &parseError, &status);
+    ICU_RAISE(status);
+    return col;
 }
 
 /**
@@ -190,17 +248,17 @@ VALUE icu4r_col_strcoll(VALUE self, VALUE str1, VALUE str2)
 VALUE icu4r_col_sort_key(VALUE self, VALUE str)
 {
     int32_t needed , capa ;
-    char * buffer ; 
+    uint8_t * buffer ; 
     VALUE ret;
     Check_Class(str, rb_cUString);
     capa = ICU_LEN(str);
-    buffer = ALLOC_N(char, capa);
+    buffer = ALLOC_N(uint8_t, capa);
     needed = ucol_getSortKey(UCOLLATOR(self), ICU_PTR(str), ICU_LEN(str), buffer, capa);
     if(needed > capa){
-      REALLOC_N(buffer,char, needed);
+      REALLOC_N(buffer,uint8_t, needed);
       needed = ucol_getSortKey(UCOLLATOR(self), ICU_PTR(str), ICU_LEN(str), buffer, needed);
     }
-    ret = rb_str_new(buffer, needed);
+    ret = rb_str_new((char *)buffer, needed);
     free(buffer);
     return ret;
 }
