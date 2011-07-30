@@ -8,11 +8,6 @@ to have serious problems.
 NOTE: The UCalendar stuff looks broken and the tests are commented
 out. I don't use this stuff so I haven't looked at it yet.
 
-This is code is derived from alterations of the original by Chris Anderson
-(jchris).
-
-It works with ruby 1.8.7 and 1.9.2 using icu version 4.8 on my machine.
-
 Changes I've made:
 
 * Repackaged the gem
